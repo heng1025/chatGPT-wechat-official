@@ -3,7 +3,7 @@
 ### dev
 
 -   rename `example.ini` to `config.ini`
--   run `pip install -r requirements.txt`
+-   run `pip install -U -r requirements.txt`
 -   run `python main.py`
 
 ### Note

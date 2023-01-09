@@ -5,7 +5,7 @@ import configparser
 from urllib import parse
 import xml.etree.ElementTree as ET
 
-from revChatGPT.revChatGPT import Chatbot
+from revChatGPT.ChatGPT import Chatbot
 
 from util import getLogger, head, make_request
 
@@ -15,18 +15,6 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 wechat = config["wechat"]
 chatGPT = config["chatGPT"]
-
-
-config = {
-    "email": chatGPT["Email"],
-    "password": chatGPT["Password"],
-    "session_token": chatGPT["SessionToken"],
-}
-try:
-    chatbot = Chatbot(config, conversation_id=None)
-except Exception as e:
-    logger.error(e)
-    raise ValueError(e)
 
 
 class WXRequest:
@@ -43,7 +31,7 @@ class WXRequest:
             self.appid = appid
             self.secret = secret
         except ValueError as e:
-            logger.info(e)
+            logger.error(e)
 
     def sendCustomMessage(self, user, content):
         url = f"{self.BASE_URL}/message/custom/send?access_token={self.__token}"
@@ -72,6 +60,32 @@ class WXRequest:
             raise ValueError("WeixinAuthSign: Invalid key")
 
 
+class ChatGPT:
+    _instance = None
+    chatbot = None
+
+    def __new__(cls, *args, **kw):
+        if cls._instance is None:
+            cls._instance = object.__new__(cls, *args, **kw)
+        return cls._instance
+
+    def __init__(self) -> None:
+        chatGPT_config = {
+            "proxy": chatGPT["Proxy"],
+            "session_token": chatGPT["SessionToken"],
+        }
+        if self.chatbot == None:
+            try:
+                self.chatbot = Chatbot(
+                    chatGPT_config,
+                    conversation_id=chatGPT["ConversationId"],
+                    parent_id=chatGPT["ParentId"],
+                )
+            except Exception as e:
+                logger.error(f"chatGPT err: {e}")
+                raise ValueError(e)
+
+
 class Bot:
     def __init__(self, salt=wechat["Salt"]) -> None:
         self.salt = salt
@@ -79,12 +93,15 @@ class Bot:
     @staticmethod
     def sendChatGPTMessage(input, user):
         try:
-            response = chatbot.get_chat_response(input, output="text")
+            chat_gpt = ChatGPT()
+            response = chat_gpt.chatbot.ask(input)
             result = response.get("message")
         except Exception as e:
-            result = "呀，不晓得说什么，请再给个机会"
+            result = "哎呀，头好冷，请再给个机会"
             logger.error(e)
         wxReq = WXRequest()
+        logger.info(f"Q::{input[0:50]}...")
+        logger.info(f"A::{result[0:80]}...")
         wxReq.sendCustomMessage(user, result)
 
     @staticmethod
@@ -130,8 +147,3 @@ class Bot:
         if hashcode == signature:
             return echostr
         raise "Auth Fail"
-
-
-if __name__ == "__main__":
-    wxReq = WXRequest()
-    wxReq.sendCustomMessage("oYxHq6ePss-oElUbt7jZ6LAcsI9w", "hello")

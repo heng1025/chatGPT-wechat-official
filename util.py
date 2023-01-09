@@ -19,12 +19,14 @@ def make_request(url, **kwargs):
     return result
 
 
-def getLogger(name="main", level="DEBUG"):
+def getLogger(name="main", level=logging.INFO):
     logger = logging.getLogger(name)
+    fmt = logging.Formatter("%(asctime)s:%(levelname)s:%(name)s:%(message)s")
     logger.setLevel(level)
-    fmt = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
-
+    # stop multiple log
+    logger.propagate = False
     stream_handler = logging.StreamHandler()
-    logger.addHandler(stream_handler)
     stream_handler.setFormatter(fmt)
+    stream_handler.setLevel(level)
+    logger.addHandler(stream_handler)
     return logger
