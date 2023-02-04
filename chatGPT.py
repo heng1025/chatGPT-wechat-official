@@ -43,3 +43,9 @@ class ChatGPT:
         logger.info(f"A::{result[0:80]}...")
 
         return result
+
+
+def makeAnswer(input):
+    chat_gpt = ChatGPT()
+    result = chat_gpt.sendMessage(input)
+    return result

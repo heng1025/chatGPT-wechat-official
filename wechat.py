@@ -5,7 +5,7 @@ import configparser
 from urllib import parse
 import xml.etree.ElementTree as ET
 
-from chatGPT import ChatGPT
+from chatGPT import makeAnswer
 
 from util import getLogger, head, make_request
 
@@ -65,10 +65,9 @@ class Bot:
 
     @staticmethod
     def sendChatGPTMessageByApi(input, user):
-        chat_gpt = ChatGPT()
         # log message
         logger.info(f"{user.center(80,'-')}")
-        result = chat_gpt.sendMessage(input)
+        result = makeAnswer(input)
         logger.info(f"{'-'.center(80,'-')}")
         wxReq = WXRequest()
         wxReq.sendCustomMessage(user, result)

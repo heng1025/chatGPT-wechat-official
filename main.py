@@ -1,9 +1,11 @@
 import configparser
+import json
 
 from urllib.parse import parse_qs
 
 from util import getLogger
 from wechat import Bot
+from chatGPT import makeAnswer
 
 logger = getLogger()
 
@@ -31,6 +33,13 @@ def application(environ, start_response):
             bot = Bot()
             token = bot.check_token(qs)
             return [token.encode("utf-8")]
+        elif url == "/chatgpt":
+            if method.lower() == "post" and data:
+                answer = makeAnswer(data.decode())
+                result = json.dumps(
+                    {"code": 0, "data": answer},
+                )
+                return [result.encode("utf-8")]
         return ["Not Found".encode("utf-8")]
     except Exception as e:
         err = f"{e}"
