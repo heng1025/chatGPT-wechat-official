@@ -60,20 +60,23 @@ class WXRequest:
 
 
 class Bot:
+    __answer = {}
+
     def __init__(self, salt=wechat["Salt"]) -> None:
         self.salt = salt
 
-    @staticmethod
-    def sendChatGPTMessageByApi(input, user):
+    @classmethod
+    def sendChatGPTMessageByApi(cls, input, user):
+        cls.__answer[user] = "loading"
         # log message
         logger.info(f"{user.center(80,'-')}")
         result = makeAnswer(input)
-        logger.info(f"{'-'.center(80,'-')}")
         wxReq = WXRequest()
         wxReq.sendCustomMessage(user, result)
+        cls.__answer.pop(user, -1)
 
-    @staticmethod
-    def receive(data):
+    @classmethod
+    def receive(cls, data):
         root = ET.fromstring(data)
         info_from_user = {}
         for child in root:
@@ -84,13 +87,16 @@ class Bot:
         ToUserName = info_from_user.get("ToUserName")
         Content = info_from_user.get("Content")
         if MsgType == "text" and Content:
-            # must respone to wechat server in 5 seconds
-            # https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_standard_messages.html
-            task = lambda: Bot.sendChatGPTMessageByApi(Content, FromUserName)
-            chatThread = threading.Thread(target=task, name="chatThread")
-            chatThread.start()
-            # either return "sucess" or return ""
-            return Bot.gen_response(FromUserName, ToUserName, "正在组织语言(10s+)...")
+            if cls.__answer.get(FromUserName) == None:
+                # must respone to wechat server in 5 seconds
+                # https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_standard_messages.html
+                task = lambda: cls.sendChatGPTMessageByApi(Content, FromUserName)
+                chatThread = threading.Thread(target=task, name="chatThread")
+                chatThread.start()
+            else:
+                return cls.gen_response(FromUserName, ToUserName, "不要捉急，慢慢来...")
+            # return either "sucess" or ""
+            return cls.gen_response(FromUserName, ToUserName, "正在组织语言(10s+)...")
         return "success"
 
     @staticmethod
