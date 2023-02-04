@@ -1,3 +1,4 @@
+import time
 import json
 import hashlib
 import threading
@@ -17,7 +18,10 @@ wechat = config["wechat"]
 
 
 class WXRequest:
-    BASE_URL = "https://api.weixin.qq.com/cgi-bin"
+    __BASE_URL = "https://api.weixin.qq.com/cgi-bin"
+    __access_token = None
+    __token_startTime = 0
+    __expire = 2 * 60 * 60
 
     def __new__(cls):
         if not hasattr(cls, "_instance"):
@@ -33,7 +37,7 @@ class WXRequest:
             logger.error(e)
 
     def sendCustomMessage(self, user, content):
-        url = f"{self.BASE_URL}/message/custom/send?access_token={self.__token}"
+        url = f"{self.__BASE_URL}/message/custom/send?access_token={self.__token}"
         data = {
             "touser": user,
             "msgtype": "text",
@@ -44,14 +48,21 @@ class WXRequest:
 
     @property
     def __token(self):
-        query = {
-            "grant_type": "client_credential",
-            "appid": self.appid,
-            "secret": self.secret,
-        }
-        url = f"{self.BASE_URL}/token?{parse.urlencode(query)}"
-        data = make_request(url, method="GET")
-        return data.get("access_token")
+        __token_endTime = time.time()
+        if __token_endTime - self.__token_startTime > self.__expire:
+            self.__access_token = None
+
+        if self.__access_token == None:
+            self.__token_startTime = time.time()
+            query = {
+                "grant_type": "client_credential",
+                "appid": self.appid,
+                "secret": self.secret,
+            }
+            url = f"{self.__BASE_URL}/token?{parse.urlencode(query)}"
+            data = make_request(url, method="GET")
+            self.__access_token = data.get("access_token")
+        return self.__access_token
 
     @staticmethod
     def __checkKey(appid, secret):
