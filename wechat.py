@@ -5,7 +5,7 @@ import configparser
 from urllib import parse
 import xml.etree.ElementTree as ET
 
-from revChatGPT.ChatGPT import Chatbot
+from revChatGPT.Official import Chatbot
 
 from util import getLogger, head, make_request
 
@@ -70,17 +70,9 @@ class ChatGPT:
         return cls._instance
 
     def __init__(self) -> None:
-        chatGPT_config = {
-            "proxy": chatGPT["Proxy"],
-            "session_token": chatGPT["SessionToken"],
-        }
         if self.chatbot == None:
             try:
-                self.chatbot = Chatbot(
-                    chatGPT_config,
-                    conversation_id=chatGPT["ConversationId"],
-                    parent_id=chatGPT["ParentId"],
-                )
+                self.chatbot = Chatbot(api_key=chatGPT["ApiKey"])
             except Exception as e:
                 logger.error(f"chatGPT err: {e}")
                 raise ValueError(e)
@@ -91,17 +83,21 @@ class Bot:
         self.salt = salt
 
     @staticmethod
-    def sendChatGPTMessage(input, user):
+    def sendChatGPTMessageByApi(input, user):
         try:
             chat_gpt = ChatGPT()
-            response = chat_gpt.chatbot.ask(input)
-            result = response.get("message")
+            response = chat_gpt.chatbot.ask(
+                input, conversation_id=chatGPT["ConversationId"]
+            )
+            result = response["choices"][0]["text"]
         except Exception as e:
-            result = "哎呀，头好冷，请再给个机会"
+            result = "Error happend!"
             logger.error(e)
         wxReq = WXRequest()
+        logger.info(f"{user.center(80,'-')}")
         logger.info(f"Q::{input[0:50]}...")
         logger.info(f"A::{result[0:80]}...")
+        logger.info(f"{'-'.center(80,'-')}")
         wxReq.sendCustomMessage(user, result)
 
     @staticmethod
@@ -116,10 +112,13 @@ class Bot:
         ToUserName = info_from_user.get("ToUserName")
         Content = info_from_user.get("Content")
         if MsgType == "text" and Content:
-            task = lambda: Bot.sendChatGPTMessage(Content, FromUserName)
+            # must respone to wechat server in 5 seconds
+            # https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_standard_messages.html
+            task = lambda: Bot.sendChatGPTMessageByApi(Content, FromUserName)
             chatThread = threading.Thread(target=task, name="chatThread")
             chatThread.start()
-            return Bot.gen_response(FromUserName, ToUserName, "阿铁正在组织语言(10s+)...")
+            # either return "sucess" or return "" 
+            return Bot.gen_response(FromUserName, ToUserName, "正在组织语言(10s+)...")
         return "success"
 
     @staticmethod

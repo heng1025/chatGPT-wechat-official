@@ -1,1 +1,1 @@
-revChatGPT==0.*
+revChatGPT==1.*
