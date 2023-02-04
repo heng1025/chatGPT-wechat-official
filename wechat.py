@@ -5,7 +5,7 @@ import configparser
 from urllib import parse
 import xml.etree.ElementTree as ET
 
-from revChatGPT.Official import Chatbot
+from chatGPT import ChatGPT
 
 from util import getLogger, head, make_request
 
@@ -14,7 +14,6 @@ logger = getLogger("wechat")
 config = configparser.ConfigParser()
 config.read("config.ini")
 wechat = config["wechat"]
-chatGPT = config["chatGPT"]
 
 
 class WXRequest:
@@ -60,44 +59,18 @@ class WXRequest:
             raise ValueError("WeixinAuthSign: Invalid key")
 
 
-class ChatGPT:
-    _instance = None
-    chatbot = None
-
-    def __new__(cls, *args, **kw):
-        if cls._instance is None:
-            cls._instance = object.__new__(cls, *args, **kw)
-        return cls._instance
-
-    def __init__(self) -> None:
-        if self.chatbot == None:
-            try:
-                self.chatbot = Chatbot(api_key=chatGPT["ApiKey"])
-            except Exception as e:
-                logger.error(f"chatGPT err: {e}")
-                raise ValueError(e)
-
-
 class Bot:
     def __init__(self, salt=wechat["Salt"]) -> None:
         self.salt = salt
 
     @staticmethod
     def sendChatGPTMessageByApi(input, user):
-        try:
-            chat_gpt = ChatGPT()
-            response = chat_gpt.chatbot.ask(
-                input, conversation_id=chatGPT["ConversationId"]
-            )
-            result = response["choices"][0]["text"]
-        except Exception as e:
-            result = "Error happend!"
-            logger.error(e)
-        wxReq = WXRequest()
+        chat_gpt = ChatGPT()
+        # log message
         logger.info(f"{user.center(80,'-')}")
-        logger.info(f"Q::{input[0:50]}...")
-        logger.info(f"A::{result[0:80]}...")
+        result = chat_gpt.sendMessage(input)
         logger.info(f"{'-'.center(80,'-')}")
+        wxReq = WXRequest()
         wxReq.sendCustomMessage(user, result)
 
     @staticmethod
@@ -117,7 +90,7 @@ class Bot:
             task = lambda: Bot.sendChatGPTMessageByApi(Content, FromUserName)
             chatThread = threading.Thread(target=task, name="chatThread")
             chatThread.start()
-            # either return "sucess" or return "" 
+            # either return "sucess" or return ""
             return Bot.gen_response(FromUserName, ToUserName, "正在组织语言(10s+)...")
         return "success"
 
