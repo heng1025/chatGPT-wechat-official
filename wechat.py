@@ -35,7 +35,7 @@ class WXRequest:
             self.secret = secret
         except ValueError as e:
             logger.error(e)
-
+    # `Customer Service API - Send Message` permission is required 
     def sendCustomMessage(self, user, content):
         url = f"{self.__BASE_URL}/message/custom/send?access_token={self.__token}"
         data = {

@@ -1,4 +1,5 @@
-FROM --platform=$BUILDPLATFORM python:3.10-alpine AS builder
+# reference https://github.com/docker/awesome-compose/tree/master/flask
+FROM --platform=$BUILDPLATFORM python:3.10-slim AS builder
 
 WORKDIR /app
 
