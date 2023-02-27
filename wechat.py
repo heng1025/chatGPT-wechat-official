@@ -79,8 +79,6 @@ class Bot:
     @classmethod
     def sendChatGPTMessageByApi(cls, input, user):
         cls.__answer[user] = "loading"
-        # log message
-        logger.info(f"{user.center(80,'-')}")
         result = makeAnswer(input)
         wxReq = WXRequest()
         wxReq.sendCustomMessage(user, result)
@@ -122,11 +120,11 @@ class Bot:
             "</xml>"
         )
 
-    def check_token(self, data):
-        signature = head(data.get("signature"))
-        timestamp = head(data.get("timestamp"))
-        nonce = head(data.get("nonce"))
-        echostr = head(data.get("echostr"))
+    def check_token(self, qs):
+        signature = head(qs.get("signature"))
+        timestamp = head(qs.get("timestamp"))
+        nonce = head(qs.get("nonce"))
+        echostr = head(qs.get("echostr"))
 
         sha1 = hashlib.sha1()
         for param in [nonce, timestamp, self.salt]:

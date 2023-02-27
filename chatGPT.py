@@ -45,9 +45,9 @@ class ChatGPT:
             logger.error(e)
 
         # log message
-        logger.info(f"Q::{input[0:50]}...")
-        logger.info(f"A::{result[0:80]}...")
-
+        logger.info(f"Q::{input}")
+        logger.info(f"A::{result}")
+        print()
         return result
 
 

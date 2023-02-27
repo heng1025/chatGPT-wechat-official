@@ -35,7 +35,6 @@ def application(environ, start_response):
             return [token.encode("utf-8")]
         elif url == "/chatgpt":
             if method.lower() == "post" and data:
-                logger.info(f"{'web'.center(80,'-')}")
                 answer = makeAnswer(data.decode())
                 result = json.dumps(
                     {"code": 0, "data": answer},
