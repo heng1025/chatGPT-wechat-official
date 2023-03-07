@@ -1,1 +1,3 @@
-revChatGPT==2.*
+revChatGPT==3.*
+a2wsgi==1.*
+uvicorn==0.*

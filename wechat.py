@@ -6,7 +6,7 @@ import configparser
 from urllib import parse
 import xml.etree.ElementTree as ET
 
-from chatGPT import makeAnswer
+from chatGPT import ChatGPT
 
 from util import getLogger, head, make_request
 
@@ -35,7 +35,8 @@ class WXRequest:
             self.secret = secret
         except ValueError as e:
             logger.error(e)
-    # `Customer Service API - Send Message` permission is required 
+
+    # `Customer Service API - Send Message` permission is required
     def sendCustomMessage(self, user, content):
         url = f"{self.__BASE_URL}/message/custom/send?access_token={self.__token}"
         data = {
@@ -79,7 +80,8 @@ class Bot:
     @classmethod
     def sendChatGPTMessageByApi(cls, input, user):
         cls.__answer[user] = "loading"
-        result = makeAnswer(input)
+        chat_gpt = ChatGPT()
+        result = chat_gpt.sendMessage(input)
         wxReq = WXRequest()
         wxReq.sendCustomMessage(user, result)
         cls.__answer.pop(user, -1)

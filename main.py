@@ -1,11 +1,10 @@
 import configparser
-import json
 
 from urllib.parse import parse_qs
 
 from util import getLogger
-from wechat import Bot
-from chatGPT import makeAnswer
+
+from route_handler import wx as wx_handler, chatgpt as chatgpt_handler
 
 logger = getLogger()
 
@@ -22,25 +21,27 @@ def application(environ, start_response):
     length = 0 if length == "" else int(length)
     data = environ["wsgi.input"].read(length)
 
-    start_response("200 OK", [("Content-type", "application/json; charset=utf-8")])
+    status = "200 OK"
+    # defafult headers
+    headers = [
+        ("Content-type", "application/json; charset=utf-8"),
+        ("Access-Control-Allow-Origin", "*"),
+    ]
+
     try:
         if url == "/wx":
-            if method.lower() == "post" and data:
-                # response message
-                result = Bot.receive(data.decode())
-                return [result.encode("utf-8")]
-            # check token
-            bot = Bot()
-            token = bot.check_token(qs)
-            return [token.encode("utf-8")]
+            start_response(status, headers)
+            yield from wx_handler(method, data, qs)
         elif url == "/chatgpt":
-            if method.lower() == "post" and data:
-                answer = makeAnswer(data.decode())
-                result = json.dumps(
-                    {"code": 0, "data": answer},
-                )
-                return [result.encode("utf-8")]
-        return ["Not Found".encode("utf-8")]
+            headers = [
+                ("Content-type", "text/event-stream;charset=utf-8"),
+                ("Access-Control-Allow-Origin", "*"),
+            ]
+            start_response(status, headers)
+            yield from chatgpt_handler(method, qs)
+        else:
+            start_response(status, headers)
+            return ["Not Found".encode("utf-8")]
     except Exception as e:
         err = f"{e}"
         logger.error(err)
@@ -48,8 +49,8 @@ def application(environ, start_response):
 
 
 if __name__ == "__main__":
-    from wsgiref.simple_server import make_server
+    from a2wsgi.wsgi import WSGIMiddleware
+    import uvicorn
 
-    with make_server("", port, application) as httpd:
-        logger.info(f"Serving on port {port}...")
-        httpd.serve_forever()
+    ASGI_APP = WSGIMiddleware(application)
+    uvicorn.run(ASGI_APP, port=port, log_level="info")
