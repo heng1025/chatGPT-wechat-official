@@ -1,5 +1,5 @@
 services:
-  web:
+  chatgpt:
     build:
       context: .
       target: builder

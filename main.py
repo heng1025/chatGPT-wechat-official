@@ -53,4 +53,4 @@ if __name__ == "__main__":
     import uvicorn
 
     ASGI_APP = WSGIMiddleware(application)
-    uvicorn.run(ASGI_APP, port=port, log_level="info")
+    uvicorn.run(ASGI_APP, host="0.0.0.0", port=port, log_level="info")
