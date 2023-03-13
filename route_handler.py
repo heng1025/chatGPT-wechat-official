@@ -18,4 +18,4 @@ def chatgpt(method, qs):
     if method.lower() == "get" and qs:
         text = head(qs.get("text"))
         chat_gpt = ChatGPT()
-        yield from chat_gpt.sendMessageWithStream(text)
+        return chat_gpt.sendMessageWithStream(text)

@@ -31,14 +31,14 @@ def application(environ, start_response):
     try:
         if url == "/wx":
             start_response(status, headers)
-            yield from wx_handler(method, data, qs)
+            return wx_handler(method, data, qs)
         elif url == "/chatgpt":
             headers = [
                 ("Content-type", "text/event-stream;charset=utf-8"),
                 ("Access-Control-Allow-Origin", "*"),
             ]
             start_response(status, headers)
-            yield from chatgpt_handler(method, qs)
+            return chatgpt_handler(method, qs)
         else:
             start_response(status, headers)
             return ["Not Found".encode("utf-8")]
