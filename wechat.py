@@ -38,6 +38,7 @@ class WXRequest:
 
     # `Customer Service API - Send Message` permission is required
     def sendCustomMessage(self, user, content):
+        # max content sizes is 2048 chars
         url = f"{self.__BASE_URL}/message/custom/send?access_token={self.__token}"
         data = {
             "touser": user,
@@ -80,11 +81,19 @@ class Bot:
     @classmethod
     def sendChatGPTMessageByApi(cls, input, user):
         cls.__answer[user] = "loading"
-        chat_gpt = ChatGPT()
-        result = chat_gpt.sendMessage(input)
         wxReq = WXRequest()
-        wxReq.sendCustomMessage(user, result)
-        cls.__answer.pop(user, -1)
+        try:
+            chat_gpt = ChatGPT()
+            result = chat_gpt.sendMessage(input)
+            wxReq.sendCustomMessage(user, result)
+        except ValueError as valErr:
+            logger.error(valErr)
+            wxReq.sendCustomMessage(user, str(valErr))
+        except Exception as e:
+            logger.error(e)
+            wxReq.sendCustomMessage(user, "粗错了,再来一次!")
+        finally:
+            cls.__answer.pop(user, -1)
 
     @classmethod
     def receive(cls, data):
