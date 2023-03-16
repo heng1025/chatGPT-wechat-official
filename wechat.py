@@ -85,10 +85,22 @@ class Bot:
         try:
             chat_gpt = ChatGPT()
             result = chat_gpt.sendMessage(input)
-            wxReq.sendCustomMessage(user, result)
-        except ValueError as valErr:
-            logger.error(valErr)
-            wxReq.sendCustomMessage(user, str(valErr))
+            # `custom message` max content sizes is 2048 chars
+            # one Chinese take up about 3 chars
+            split_count = 600
+            result_count = len(result)
+            if result_count < split_count:
+                wxReq.sendCustomMessage(user, result)
+            else:
+                split_result = [
+                    result[i : i + split_count]
+                    for i in range(0, result_count, split_count)
+                ]
+                for item in split_result:
+                    wxReq.sendCustomMessage(user, item)
+        except ValueError as e:
+            logger.error(e)
+            wxReq.sendCustomMessage(user, str(e))
         except Exception as e:
             logger.error(e)
             wxReq.sendCustomMessage(user, "粗错了,再来一次!")
