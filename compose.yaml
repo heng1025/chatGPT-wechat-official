@@ -3,7 +3,8 @@ services:
     build:
       context: .
       target: builder
-    ports:
-      - '8081:8081'
+    # if you use a reverse proxy, may not need to expose port
+    # ports:
+    #   - '8081:8081'
     volumes:
       - .:/app

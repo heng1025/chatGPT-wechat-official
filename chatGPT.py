@@ -1,7 +1,7 @@
 import uuid
 import configparser
-
-from revChatGPT.V1 import Chatbot, Error
+from revChatGPT.typing import Error
+from revChatGPT.V1 import Chatbot
 from revChatGPT.V3 import Chatbot as ChatbotByApi
 
 from util import getLogger
