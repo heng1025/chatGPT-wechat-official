@@ -155,4 +155,4 @@ class Bot:
         hashcode = sha1.hexdigest()
         if hashcode == signature:
             return echostr
-        raise "Auth Fail"
+        raise ValueError("Auth Fail")
