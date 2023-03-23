@@ -1,6 +1,7 @@
 from os import getenv
 from urllib.parse import parse_qs
 from dotenv import load_dotenv
+from a2wsgi.wsgi import WSGIMiddleware
 
 from util import getLogger
 from route_handler import wx as wx_handler, chatgpt as chatgpt_handler
@@ -47,10 +48,8 @@ def application(environ, start_response):
         logger.error(err)
         return [err.encode("utf-8")]
 
+app = WSGIMiddleware(application)
 
 if __name__ == "__main__":
-    from a2wsgi.wsgi import WSGIMiddleware
     import uvicorn
-
-    ASGI_APP = WSGIMiddleware(application)
-    uvicorn.run(ASGI_APP, host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run(app=app, host="0.0.0.0", port=port, log_level="info")

@@ -14,8 +14,8 @@ __pycache__/
 # uwsgi
 **/uwsgi/uwsgi*
 
-# config
-config.ini
+# deployment
+.vercel
 
 # env
 .env
