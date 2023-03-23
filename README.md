@@ -3,7 +3,7 @@
 ### dev
 
 1.  create venv `python -m venv .venv`
-2.  rename `example.ini` to `config.ini`
+2.  rename `.env.example` to `.env`
 3.  run `pip install -U -r requirements.txt`
 4.  run `python main.py`
 

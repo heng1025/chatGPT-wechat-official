@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: builder
+    env_file: .env
     # if you use a reverse proxy, may not need to expose port
     # ports:
     #   - '8081:8081'

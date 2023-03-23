@@ -2,7 +2,7 @@ import time
 import json
 import hashlib
 import threading
-import configparser
+from os import getenv
 from urllib import parse
 import xml.etree.ElementTree as ET
 
@@ -11,10 +11,6 @@ from chatGPT import ChatGPT
 from util import getLogger, head, make_request
 
 logger = getLogger("wechat")
-
-config = configparser.ConfigParser()
-config.read("config.ini")
-wechat = config["wechat"]
 
 
 class WXRequest:
@@ -28,7 +24,7 @@ class WXRequest:
             cls._instance = super(WXRequest, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, appid=wechat["Appid"], secret=wechat["Secret"]) -> None:
+    def __init__(self, appid=getenv("Appid"), secret=getenv("Secret")) -> None:
         try:
             self.__checkKey(appid, secret)
             self.appid = appid
@@ -75,7 +71,7 @@ class WXRequest:
 class Bot:
     __answer = {}
 
-    def __init__(self, salt=wechat["Salt"]) -> None:
+    def __init__(self, salt=getenv("Salt")) -> None:
         self.salt = salt
 
     @classmethod

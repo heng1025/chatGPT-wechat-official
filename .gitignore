@@ -19,3 +19,4 @@ config.ini
 
 # env
 .env
+.env.local

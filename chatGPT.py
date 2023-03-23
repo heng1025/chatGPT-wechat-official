@@ -1,5 +1,6 @@
 import uuid
-import configparser
+from os import getenv
+
 from revChatGPT.typing import Error
 from revChatGPT.V1 import Chatbot
 from revChatGPT.V3 import Chatbot as ChatbotByApi
@@ -7,18 +8,13 @@ from revChatGPT.V3 import Chatbot as ChatbotByApi
 from util import getLogger
 
 
-config = configparser.ConfigParser()
-config.read("config.ini")
-chatGPT = config["chatGPT"]
-common = config["COMMON"]
-
 logger = getLogger("chatGPT")
 
 
 class ChatGPT:
     _instance = None
     chatbot = None
-    api_key = chatGPT.get("ApiKey")
+    api_key = getenv("ApiKey")
 
     def __new__(cls, *args, **kw):
         if cls._instance is None:
@@ -28,14 +24,12 @@ class ChatGPT:
     def __init__(self) -> None:
         if self.chatbot == None:
             if self.api_key:
-                self.chatbot = ChatbotByApi(
-                    api_key=self.api_key, proxy=common.get("Proxy")
-                )
+                self.chatbot = ChatbotByApi(api_key=self.api_key, proxy=getenv("Proxy"))
             else:
                 self.chatbot = Chatbot(
                     config={
-                        "proxy": common.get("Proxy"),
-                        "access_token": chatGPT.get("AccessToken"),
+                        "proxy": getenv("Proxy"),
+                        "access_token": getenv("AccessToken"),
                     }
                 )
 
@@ -47,8 +41,8 @@ class ChatGPT:
             else:
                 for data in self.chatbot.ask(
                     input,
-                    conversation_id=chatGPT.get("ConversationId"),
-                    parent_id=chatGPT.get("ParentId"),
+                    conversation_id=getenv("ConversationId"),
+                    parent_id=getenv("ParentId"),
                 ):
                     result = data["message"]
         except Error as e:
@@ -67,8 +61,8 @@ class ChatGPT:
             prev_text = ""
             for data in self.chatbot.ask(
                 input,
-                conversation_id=chatGPT.get("ConversationId"),
-                parent_id=chatGPT.get("ParentId"),
+                conversation_id=getenv("ConversationId"),
+                parent_id=getenv("ParentId"),
             ):
                 if self.api_key:
                     print(data, end="", flush=True)

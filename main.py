@@ -1,16 +1,16 @@
-import configparser
-
+from os import getenv
 from urllib.parse import parse_qs
+from dotenv import load_dotenv
 
 from util import getLogger
-
 from route_handler import wx as wx_handler, chatgpt as chatgpt_handler
+
+# load env
+load_dotenv(override=True)
 
 logger = getLogger()
 
-config = configparser.ConfigParser()
-config.read("config.ini")
-port = config["COMMON"].getint("Port")
+port = int(getenv("Port"))
 
 
 def application(environ, start_response):

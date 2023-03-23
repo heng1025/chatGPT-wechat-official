@@ -1,6 +1,7 @@
 revChatGPT==4.*
 a2wsgi==1.*
 uvicorn==0.*
+python-dotenv==1.*
 
 # dev
 pytest==7.*
