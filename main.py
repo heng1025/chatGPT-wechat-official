@@ -1,16 +1,16 @@
+from dotenv import load_dotenv
+
+# load env
+load_dotenv(override=True)
+
 from os import getenv
 from urllib.parse import parse_qs
-from dotenv import load_dotenv
 from a2wsgi.wsgi import WSGIMiddleware
 
 from util import getLogger
 from route_handler import wx as wx_handler, chatgpt as chatgpt_handler
 
-# load env
-load_dotenv(override=True)
-
 logger = getLogger()
-
 port = int(getenv("Port"))
 
 
@@ -48,8 +48,10 @@ def application(environ, start_response):
         logger.error(err)
         return [err.encode("utf-8")]
 
+
 app = WSGIMiddleware(application)
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app=app, host="0.0.0.0", port=port, log_level="info")

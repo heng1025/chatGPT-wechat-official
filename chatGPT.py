@@ -7,7 +7,6 @@ from revChatGPT.V3 import Chatbot as ChatbotByApi
 
 from util import getLogger
 
-
 logger = getLogger("chatGPT")
 
 
