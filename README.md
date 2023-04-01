@@ -23,7 +23,3 @@
 ### credit
 
 -   [ChatGPT for python](https://github.com/acheong08/ChatGPT)
-
-### demo
-
-<img src="http://oss.1r21.cn/wx-test.jpg" alt="wechat test account" style="width:200px;"/>
